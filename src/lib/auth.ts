@@ -2,8 +2,8 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 
-const client = new MongoClient("mongodb://localhost:27017/database");
-const db = client.db();
+const client = new MongoClient(process.env.BETTER_AUTH_DB_URI as string);
+const db = client.db('loopdb');
 
 export const auth = betterAuth({
     emailAndPassword: { 
@@ -15,5 +15,15 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string, 
     }, 
   }, 
-  database: mongodbAdapter(db),
+  user: {
+       additionalFields: {
+          role: {
+              type:['seeker','recruiter','admin'],
+              input: false
+            } 
+        }
+    },
+  database: mongodbAdapter(db,{
+    client
+  })
 });

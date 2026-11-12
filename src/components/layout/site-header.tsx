@@ -148,7 +148,7 @@ export function SiteHeader() {
                 <Button
                   variant="ghost"
                   nativeButton={false}
-                  render={<Link href="/login" />}
+                  render={<Link href="/sign-in" />}
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-primary hover:bg-transparent hover:text-primary/80"
                 >
