@@ -18,6 +18,14 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { toast } from "react-toastify";
 
+const ROLES = [
+  { value: "seeker", label: "Job seeker" },
+  { value: "recruiter", label: "Recruiter" },
+  { value: "admin", label: "Admin" },
+] as const;
+
+type Role = (typeof ROLES)[number]["value"];
+
 export default function SignUpPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -29,32 +37,39 @@ export default function SignUpPage() {
     setError("");
 
     const form = new FormData(e.currentTarget);
-    const user = Object.fromEntries(form.entries())
-    console.log(user)
     const name = String(form.get("name") ?? "").trim();
     const email = String(form.get("email") ?? "").trim();
     const password = String(form.get("password") ?? "");
+    const role = String(form.get("role") ?? "seeker") as Role;
 
     if (!name || !email || password.length < 8) {
       setError("Please fill in all fields. Password must be at least 8 characters.");
       return;
     }
 
-    setLoading(true);
-    const { data, error } = await authClient.signUp.email({ name, email, password });
-    setLoading(false);
-    if (data) {
-      toast.success('Sign-Up successfully')
-      router.push("/");
-      router.refresh();
-
+    if (!ROLES.some((r) => r.value === role)) {
+      setError("Please choose a valid role.");
+      return;
     }
+
+    setLoading(true);
+    const { data, error } = await authClient.signUp.email({
+      name,
+      email,
+      password,
+    });
+    setLoading(false);
+
     if (error) {
       setError(error.message ?? "Sign-up failed. Please try again.");
       return;
     }
 
-
+    if (data) {
+      toast.success("Sign-Up successfully");
+      router.push("/");
+      router.refresh();
+    }
   }
 
   return (
@@ -81,6 +96,23 @@ export default function SignUpPage() {
                 placeholder="you@example.com"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">I am a</Label>
+              <select
+                id="role"
+                name="role"
+                defaultValue="seeker"
+                required
+                className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
