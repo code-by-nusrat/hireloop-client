@@ -39,18 +39,21 @@ export default function SignInPage() {
 
     setLoading(true);
     const { data, error } = await authClient.signIn.email({ email, password });
-    setLoading(false);
 
     if (error) {
+      setLoading(false);
       setError(error.message ?? "Sign-in failed. Please try again.");
       return;
     }
 
     if (data) {
+      // Make sure the client session store has the new session
+      await authClient.getSession({ fetchOptions: { cache: "no-store" } });
       toast.success("Signed in successfully");
       router.push("/");
       router.refresh();
     }
+    setLoading(false);
   }
 
   return (
@@ -111,7 +114,10 @@ export default function SignInPage() {
             </Button>
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
-              <Link href="/sign-up" className="font-medium text-foreground hover:underline">
+              <Link
+                href="/sign-up"
+                className="font-medium text-foreground hover:underline"
+              >
                 Sign up
               </Link>
             </p>
