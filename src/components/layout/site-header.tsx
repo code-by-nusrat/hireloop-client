@@ -1,12 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { MenuIcon } from "lucide-react"
 import { cn } from "cn"
-
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -16,12 +15,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { useSession, signOut } from "@/lib/auth-client"
-
-const navLinks = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Company", href: "/companies" },
-  { label: "Pricing", href: "/pricing" },
-]
 
 type HeaderUser = {
   name?: string | null
@@ -78,11 +71,21 @@ function NavLinks({
   itemClassName?: string
   onNavigate?: () => void
 }) {
+  const { data: session } = useSession()
+  const role = session?.user?.role ?? "seeker"
+
+  const navLinks = [
+    { label: "Browse Jobs", href: "/jobs" },
+    { label: "Company", href: "/companies" },
+    { label: "Pricing", href: "/pricing" },
+    // Only show Dashboard when the user is signed in
+    ...(session ? [{ label: "Dashboard", href: `/dashboard/${role}` }] : []),
+  ]
+
   return (
     <nav aria-label="Main" className={cn("flex items-center gap-1", className)}>
       {navLinks.map((link) => {
-        const active =
-          link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
+        const active = pathname.startsWith(link.href)
         return (
           <Link
             key={link.href}
@@ -127,14 +130,7 @@ export function SiteHeader() {
   const pathname = usePathname()
   const logout = useLogout()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { data: session, isPending, refetch } = useSession()
-
-  // Re-check the session whenever the route changes, so the welcome text
-  // appears right after signing in without a manual reload.
-  useEffect(() => {
-    refetch()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname])
+  const { data: session, isPending } = useSession()
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/60">

@@ -57,6 +57,7 @@ export default function SignUpPage() {
       name,
       email,
       password,
+      role
     });
     setLoading(false);
 
