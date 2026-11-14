@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
+    Plus,
     Banknote,
     Bookmark,
     Briefcase,
@@ -51,6 +52,7 @@ const menuItemsByRole: Record<DashboardRole, MenuItem[]> = {
     ],
     recruiter: [
         { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, url: '/dashboard/recruiter' },
+        { id: 'add-job', name: 'Add Job', icon: Plus, url: '/dashboard/recruiter/jobs/new' },
         { id: 'jobs', name: 'Manage Jobs', icon: Briefcase, url: '/dashboard/recruiter/jobs' },
         { id: 'applications', name: 'Applications', icon: FileText, url: '/dashboard/recruiter/applications' },
         { id: 'settings', name: 'Settings', icon: Settings, url: '/dashboard/recruiter/settings' },
@@ -114,13 +116,16 @@ export function DashboardSidebar() {
     const router = useRouter()
 
     const items = menuItemsByRole[role] ?? menuItemsByRole.seeker
-    const rootUrl = items[0].url
 
-    // Dashboard (root item) only matches exactly; other items also match sub-routes
-    const isActive = (url: string) =>
-        url === rootUrl
-            ? pathname === url
-            : pathname === url || pathname.startsWith(url + '/')
+    // Highlight only the single best match: the item with the longest URL
+    // that fits the current path (so /jobs/new doesn't also light up /jobs)
+    const activeUrl = items
+        .filter(
+            (item) => pathname === item.url || pathname.startsWith(item.url + '/')
+        )
+        .sort((a, b) => b.url.length - a.url.length)[0]?.url
+
+    const isActive = (url: string) => url === activeUrl
 
     const handleLogout = async () => {
         await signOut()
