@@ -1,5 +1,6 @@
 'use client'
-
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css" // remove this line if you use react-toastify v11 or newer
 import { useState } from "react"
 import Link from "next/link"
 import {
@@ -62,7 +63,7 @@ export type Values = {
 }
 
 // Errors: for each field name, an optional error message
- type Errors = Partial<Record<keyof Values, string>>
+type Errors = Partial<Record<keyof Values, string>>
 
 const initialValues: Values = {
   title: "",
@@ -202,6 +203,8 @@ export default function NewJobPage() {
   const [values, setValues] = useState<Values>(initialValues)
   const [errors, setErrors] = useState<Errors>({})
   const [submitting, setSubmitting] = useState(false)
+  const [posted, setPosted] = useState(false)     // true after the job is saved
+  const [disabled, setDisabled] = useState(false) // true after the second click
 
   // Called whenever the user changes any field
   function updateField<K extends keyof Values>(name: K, value: Values[K]) {
@@ -225,21 +228,66 @@ export default function NewJobPage() {
     setErrors((prev) => ({ ...prev, [name]: validate(values)[name] }))
   }
 
+  // async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  //   e.preventDefault()
+
+  //   // Check everything
+  //   const newErrors = validate(values)
+  //   setErrors(newErrors)
+
+  //   // If there is any error, stop and jump to the first broken field
+  //   const firstError = Object.keys(newErrors)[0]
+  //   if (firstError) {
+  //     document.getElementById(firstError)?.focus()
+  //     return
+  //   }
+
+  //   // Everything is valid
+  //   setSubmitting(true)
+  //   const job = {
+  //     ...values,
+  //     title: values.title.trim(),
+  //     company: values.company.trim(),
+  //     location: values.location.trim(),
+  //     responsibilities: values.responsibilities.trim(),
+  //     qualifications: values.qualifications.trim(),
+
+  //   }
+
+  //   // TODO: send `job` to your API / server action
+  //   try {
+  //     const result = await createJob(job)
+  //     console.log(result)
+  //     // e.g. router.push("/dashboard/recruiter/jobs")
+  //   } catch (error) {
+  //     console.error(error)
+  //     // show an error message to the user
+  //   } finally {
+  //     setSubmitting(false)
+  //   }
+  // }
+
+  // Adds a red border when a field has an error
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+
+    // Second click: show the message and lock the button
+    if (posted) {
+      toast.info("Already posted")
+      setDisabled(true)
+      return
+    }
 
     // Check everything
     const newErrors = validate(values)
     setErrors(newErrors)
 
-    // If there is any error, stop and jump to the first broken field
     const firstError = Object.keys(newErrors)[0]
     if (firstError) {
       document.getElementById(firstError)?.focus()
       return
     }
 
-    // Everything is valid
     setSubmitting(true)
     const job = {
       ...values,
@@ -248,23 +296,21 @@ export default function NewJobPage() {
       location: values.location.trim(),
       responsibilities: values.responsibilities.trim(),
       qualifications: values.qualifications.trim(),
-      
     }
 
-    // TODO: send `job` to your API / server action
     try {
-  const result = await createJob(job)
-  console.log(result)
-  // e.g. router.push("/dashboard/recruiter/jobs")
-} catch (error) {
-  console.error(error)
-  // show an error message to the user
-} finally {
-  setSubmitting(false)
-}
+      await createJob(job)
+      setPosted(true)
+      toast.success("Job published successfully")
+    } catch (error) {
+      console.error(error)
+      toast.error("Failed to publish the job")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  // Adds a red border when a field has an error
+
   const invalid = (name: keyof Values) =>
     errors[name] ? "border-destructive focus-visible:ring-destructive/30" : ""
 
@@ -550,7 +596,11 @@ export default function NewJobPage() {
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
+        {/* <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
+          {submitting ? "Publishing..." : "Publish Job"}
+          <Send />
+        </Button> */}
+        <Button type="submit" disabled={submitting || disabled} className="...">
           {submitting ? "Publishing..." : "Publish Job"}
           <Send />
         </Button>
