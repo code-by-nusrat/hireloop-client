@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { createJob } from "@/lib/actions/jobs"
 
 /* ------------------------------------------------------------------ */
 /* 1. Options for dropdowns and buttons                                */
@@ -45,7 +46,7 @@ const FREQUENCIES = ["per hour", "per day", "per week", "per month", "per year"]
 /* 2. The shape of our form data                                       */
 /* ------------------------------------------------------------------ */
 
-type Values = {
+export type Values = {
   title: string
   company: string
   category: string
@@ -61,7 +62,7 @@ type Values = {
 }
 
 // Errors: for each field name, an optional error message
-type Errors = Partial<Record<keyof Values, string>>
+ type Errors = Partial<Record<keyof Values, string>>
 
 const initialValues: Values = {
   title: "",
@@ -247,14 +248,20 @@ export default function NewJobPage() {
       location: values.location.trim(),
       responsibilities: values.responsibilities.trim(),
       qualifications: values.qualifications.trim(),
-      minSalary: Number(values.minSalary),
-      maxSalary: Number(values.maxSalary),
+      
     }
 
     // TODO: send `job` to your API / server action
-    console.log(job)
-    setSubmitting(false)
-    
+    try {
+  const result = await createJob(job)
+  console.log(result)
+  // e.g. router.push("/dashboard/recruiter/jobs")
+} catch (error) {
+  console.error(error)
+  // show an error message to the user
+} finally {
+  setSubmitting(false)
+}
   }
 
   // Adds a red border when a field has an error
