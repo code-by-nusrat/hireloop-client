@@ -59,6 +59,25 @@ function getStatus(deadline: string) {
     return deadline >= today ? "Active" : "Expired"
 }
 
+// ADDED: Jobs closing soonest come first. Expired jobs go to the bottom.
+function sortByDeadline(jobs: Job[]) {
+    const today = new Date().toLocaleDateString("en-CA") // "YYYY-MM-DD"
+
+    return [...jobs].sort((a, b) => {
+        const aActive = a.deadline >= today
+        const bActive = b.deadline >= today
+
+        // Active jobs always come before expired jobs
+        if (aActive !== bActive) return aActive ? -1 : 1
+
+        // Active: closest deadline first
+        if (aActive) return a.deadline.localeCompare(b.deadline)
+
+        // Expired: most recently closed first
+        return b.deadline.localeCompare(a.deadline)
+    })
+}
+
 /* ------------------------------------------------------------------ */
 /* 3. The page                                                         */
 /* ------------------------------------------------------------------ */
@@ -84,17 +103,20 @@ export default function ManageJobsPage() {
     }, [])
 
     // Delete a job, then remove it from the table without reloading
-    async function handleDelete(id: string) {
-        const sure = window.confirm("Delete this job post?")
-        if (!sure) return
+    // async function handleDelete(id: string) {
+    //     const sure = window.confirm("Delete this job post?")
+    //     if (!sure) return
 
-        try {
-            await deleteJob(id)
-            setJobs((current) => current.filter((job) => job._id !== id))
-        } catch {
-            alert("Failed to delete the job")
-        }
-    }
+    //     try {
+    //         await deleteJob(id)
+    //         setJobs((current) => current.filter((job) => job._id !== id))
+    //     } catch {
+    //         alert("Failed to delete the job")
+    //     }
+    // }
+
+    // ADDED: the jobs in order of closing date
+    const sortedJobs = sortByDeadline(jobs)
 
     return (
         <div className="w-full space-y-6">
@@ -169,8 +191,8 @@ export default function ManageJobsPage() {
                             </TableRow>
                         )}
 
-                        {/* One row for every job */}
-                        {jobs.map((job) => {
+                        {/* One row for every job (ADDED: uses sortedJobs instead of jobs) */}
+                        {sortedJobs.map((job) => {
                             const status = getStatus(job.deadline)
 
                             return (

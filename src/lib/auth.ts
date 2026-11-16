@@ -6,6 +6,12 @@ const client = new MongoClient(process.env.BETTER_AUTH_DB_URI as string);
 const db = client.db('loopdb');
 
 export const auth = betterAuth({
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // seconds
+    },
+  },
     emailAndPassword: { 
     enabled: true, 
   }, 

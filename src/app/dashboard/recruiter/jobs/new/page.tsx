@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
+import { redirect, useRouter } from "next/navigation"
 
 /* ------------------------------------------------------------------ */
 /* 1. Options for dropdowns and buttons                                */
@@ -205,7 +206,7 @@ export default function NewJobPage() {
   const [submitting, setSubmitting] = useState(false)
   const [posted, setPosted] = useState(false)     // true after the job is saved
   const [disabled, setDisabled] = useState(false) // true after the second click
-
+  const router =useRouter()
   // Called whenever the user changes any field
   function updateField<K extends keyof Values>(name: K, value: Values[K]) {
     const next = { ...values, [name]: value }
@@ -302,6 +303,7 @@ export default function NewJobPage() {
       await createJob(job)
       setPosted(true)
       toast.success("Job published successfully")
+      router.push('/dashboard/recruiter/jobs')
     } catch (error) {
       console.error(error)
       toast.error("Failed to publish the job")
