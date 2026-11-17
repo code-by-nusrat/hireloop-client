@@ -28,3 +28,30 @@ export const deleteJob = async (id: string) => {
   if (!res.ok) throw new Error("Failed to delete job")
   return res.json()
 }
+
+// Get single job by ID
+export const getJobById = async (id: string): Promise<Job | null> => {
+  const res = await fetch(`${BASE_URL}/jobs/${id}`, {
+    cache: "no-store",
+  })
+
+  if (res.status === 404) return null
+
+  if (!res.ok) {
+    throw new Error("Failed to load job")
+  }
+
+  return res.json()
+}
+
+
+export async function applyToJob(data){
+   const response =await fetch (`${BASE_URL}/applications`,{
+    method: "POST",
+    headers:{
+        "Content-Type": "application/json"
+    },
+     body:JSON.stringify(data)
+   }) 
+   return response.json()
+}

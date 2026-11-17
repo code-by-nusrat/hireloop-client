@@ -1,5 +1,5 @@
 'use client'
-import { ToastContainer, toast } from "react-toastify"
+import { toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css" // remove this line if you use react-toastify v11 or newer
 import { useState } from "react"
 import Link from "next/link"

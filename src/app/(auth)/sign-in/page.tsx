@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "react-toastify";
 
 export default function SignInPage() {
+  const searchParams =useSearchParams()
+  const redirectTo = searchParams .get("redirectTo") ?? "/"
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -38,7 +40,7 @@ export default function SignInPage() {
     }
 
     setLoading(true);
-    const { data, error } = await authClient.signIn.email({ email, password });
+    const { data, error } = await authClient.signIn.email({ email, password,  });
 
     if (error) {
       setLoading(false);
@@ -50,7 +52,7 @@ export default function SignInPage() {
       // Make sure the client session store has the new session
       await authClient.getSession({ fetchOptions: { cache: "no-store" } });
       toast.success("Signed in successfully");
-      router.push("/");
+      router.push(redirectTo);
       router.refresh();
     }
     setLoading(false);
